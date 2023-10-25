@@ -6,7 +6,7 @@
 Heap<int> CreateHeapTest() {
     Heap<int> heap(5);
 
-    heap.Insert(5);
+    heap.Insert(5); 
     heap.Insert(3);
     heap.Insert(7);
     heap.Insert(2);
