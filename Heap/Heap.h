@@ -20,9 +20,9 @@ private:
         *b = *a;
         *a = temp;
     }
-    //преобразование массива в кучу макс
-   
-    void heapifyMax(int i)
+
+    //преобразование массива в кучу макс c продвижением вниз с корневым узлом i
+    void heapifyMax(int i, int heapSize)
     {
         int largest = i; // индекс текущего родительского элемента
         int l = 2 * i + 1; // левый потомок
@@ -40,7 +40,7 @@ private:
         if (largest != i)
         {
             swap(&heapArr[i], &heapArr[largest]);
-            heapifyMax(largest);
+            heapifyMax(largest, heapSize);
         }
     }
     //void heapifyMax(T array[], int size, int i)
@@ -89,13 +89,45 @@ private:
 
 public:
     // Конструктор 
+    //конструктор который принимает массив
     Heap(int maxsize) : heapSize(0), maxHeapSize(maxsize) {
+        //проверка на исключительную ситуацию
+        //макси размер кучи не может быть <=0
         if (maxHeapSize <= 0)
         {
             throw invalid_argument("Максимальный размер кучи должен быть больше нуля");
         }
+        //выделение памяти
         heapArr = new T[maxHeapSize];
     }
+
+    // Конструктор, принимающий массив(макс размер массива=размеру переданного)
+    Heap(T* arr, int size) : heapSize(size), maxHeapSize(size)
+    {
+       
+        // Проверка на исключительную ситуацию
+        if (maxHeapSize <= 0)
+        {
+            throw std::invalid_argument("Максимальный размер кучи должен быть больше нуля");
+        }
+        
+        // Выделение памяти
+        heapArr = new T[maxHeapSize];
+
+        // Копирование элементов из переданного массива во внутренний массив heapArr
+        //чтобы изменения в массиве копированном не отражались на оригинальный массив
+        memcpy(heapArr, arr, size * sizeof(T));
+        
+
+        // Построение кучи (перегруппировка массива)
+        for (int i = heapSize / 2 - 1; i >= 0; i--)
+        {
+            heapifyMax(i, heapSize);
+        }
+    }
+
+    
+
 
     // Деструктор
     ~Heap() {
@@ -111,6 +143,23 @@ public:
     int GetMaxHeapSize() const {
         return maxHeapSize;
     }
+    T*GetHeapArray() const
+    {
+        return heapArr;
+    }
+    //доступ к элементу по индексу
+    T getElement(int index) const
+    {
+        if (index >= 0 && index < heapSize)
+        {
+            return heapArr[index];
+        }
+        else
+        {
+            // Обработка ошибки, если индекс выходит за пределы массива
+            throw std::invalid_argument("Индeкс за пределами массива");
+        }
+    }
     //вставка нового элемента
     void Insert(T newNum)
     { //если размер кучи больше или равен макс 
@@ -121,12 +170,12 @@ public:
             //перевыделение памяти
             T* newHeapArr = new T[newMaxSize];
 
-            // Копирование существующих элементов в новый блок памяти
-            for (int i = 0; i < heapSize; i++)
-            {
-                newHeapArr[i] = heapArr[i];
-            }
-
+            //// Копирование существующих элементов в новый блок памяти
+            //for (int i = 0; i < heapSize; i++)
+            //{
+            //    newHeapArr[i] = heapArr[i];
+            //}
+            memcpy(newHeapArr, heapArr, sizeof(T)*maxHeapSize);
             // Освобождение старого блока памяти
             delete[] heapArr;
 
@@ -138,7 +187,7 @@ public:
             //throw invalid_argument("Достигнут максимальный размер кучи");
         }
        //если размер кучи=0,куча пуста
-        if (heapSize == 0)
+       else if (heapSize == 0)
         {//новый элемент помещается в корень кучи
             heapArr[0] = newNum;
             //размер увеличивается на 1
@@ -154,7 +203,7 @@ public:
             // начиная с последнего родителя и двигаясь к корню кучи.
             for (int i = heapSize / 2 - 1; i >= 0; i--)
             {//преобразование массива в кучу
-                heapifyMax( i);
+                heapifyMax( i, heapSize);
             }
         }
     }
@@ -184,9 +233,10 @@ public:
         //после удаления происходит преобразование в кучу макс
         for (int j = heapSize / 2 - 1; j >= 0; j--)
         {
-            heapifyMax(j);
+            heapifyMax(j, heapSize);
         }
     }
+
     //поиск элемента в кучи
     int Find(const T& value) const
     { //проходим по элементам кучи
@@ -199,6 +249,8 @@ public:
         }
         return -1; // Элемент не найден
     }
+
+
     //текущии размер кучи
     int Size() const {
         return heapSize;
@@ -219,6 +271,51 @@ public:
         cout << endl;
     }
 
+    // сортировка массива по возрастанию с использованием пирамидальной сортировки
+    void heapSort()
+    {  // Построение кучи из исходного массива
+        for (int i = heapSize / 2 - 1; i >= 0; i--)
+        {//преобразование массива в кучу
+            heapifyMax(i, heapSize);
+        }
+
+        // Извлечение элементов из кучи по одному из корня
+        for (int i = heapSize - 1; i > 0; i--) {
+            // Перемещаем текущий корень в конец
+           swap(&heapArr[0], &heapArr[i]);
+
+            // Вызываем heapifyMax на уменьшенной куче
+            heapifyMax(0,i);
+        }
+    }
+    //турнирная сортировка
+    void turnamentSort() {
+
+    
+        // Внешний цикл по уменьшению размера сортируемой части массива
+        for (int i = heapSize - 1; i > 0; i--) {
+            // Внутренний цикл по парам элементов
+            for (int j = 0; j < i; j += 2) {
+                //winnerIdx хранит интекс победителя текущей пары элементов
+                //изначально устанавливается в индекс первого элемента пары J
+                int winnerIdx = j;
+
+                // Находим индекс победителя в текущей паре элементов
+                if (j + 1 < i && heapArr[j + 1] > heapArr[winnerIdx])
+                    winnerIdx = j + 1;
+                if (heapArr[i] > heapArr[winnerIdx])
+                    winnerIdx = i;
+
+                // Если победитель не равен текущему крайнему правому элементу,
+                // меняем победителя и текущий крайний правый элемент местами
+                if (winnerIdx != i) {
+                    swap(&heapArr[i], &heapArr[winnerIdx]);
+                }
+            }
+        }
+
+    }
+    
 };
 
 

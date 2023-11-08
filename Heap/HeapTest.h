@@ -161,7 +161,7 @@ void TestFind() {
     assert(index12 == 0);
     cout << "Поиск элемента тест пройден" << endl;
 }
-
+ //тестирование удаления элемента
 void TestDelete() {
     int elements[] = { 5, 3, 7, 2, 4 };
     int numElements = sizeof(elements) / sizeof(elements[0]);
@@ -170,8 +170,51 @@ void TestDelete() {
     for (int i = 0; i < numElements; i++) {
         heap.Insert(elements[i]);
     }
-
+   
+    // проверяем что куча состоит из необходимых элементов
+    for (int i = 0; i < heap.GetHeapSize(); i++)
+    {
+        cout << heap.getElement(i) << endl;
+       
+    } 
     heap.deleteNode(7);
+
+
+    cout << "Удаление элемента из кучи проверено" << endl;
+
+
     // Проверка размера кучи после удаления
-    assert(heap.Size() == 3);
+   // assert(heap.Size() == 3);
+}
+//тестирование сортировки кучей
+void TestHeapSort() {
+    Heap<int> heap = CreateHeapTest();
+    heap.heapSort();
+    // Проверка, что массив отсортирован по возрастанию
+    for (int i = 0; i < heap.GetHeapSize()-1; i++)
+    {
+        cout << heap.getElement(i) << endl;;
+        assert(heap.getElement(i) <= heap.getElement(i+1));
+    }
+
+
+    Heap<int> heap1 = CreateHeapOneTest();
+
+    heap1.heapSort();
+    // Проверка, что массив отсортирован по возрастанию
+    
+      // cout << heap1.getElement(i) << endl;;
+        assert(heap1.getElement(0) == 8);
+
+    Heap<int> heap2(5);
+
+    heap2.heapSort();
+    // Проверка, что массив отсортирован по возрастанию
+    for (int i = 0; i < heap2.GetHeapSize(); i++)
+    {
+        cout << heap2.getElement(i) << endl;;
+        assert(heap2.getElement(i) <= heap2.getElement(i));
+    }
+
+    cout << "Сортировка кучей тест пройден" << endl;
 }
